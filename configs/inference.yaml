@@ -1,0 +1,30 @@
+model:
+  encoder: resnet18
+  pretrained: false
+  in_channels: 3
+  decoder: unet
+
+inference:
+  checkpoint: ./checkpoints/best.pt
+  threshold: 0.5
+  tile_size: 256
+  tile_overlap: 32
+  max_registration_error: 5.0  # pixels
+  min_change_area_px: 50
+  device: auto  # auto, cpu, cuda
+
+output:
+  format: geotiff       # geotiff, png, both
+  save_probability: true
+  save_polygons: true
+  save_to_db: true
+
+database:
+  backend: geopackage   # geopackage or postgis
+  path: ./outputs/detections.gpkg
+  # postgis: DATABASE_URL env var (if backend=postgis)
+
+api:
+  host: 0.0.0.0
+  port: 8000
+  workers: 1

@@ -1,0 +1,48 @@
+# Data (too large for git)
+data/raw/
+data/processed/
+data/augmented/
+
+# Model artifacts
+checkpoints/
+logs/
+outputs/
+wandb/
+mlruns/
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Env
+.env
+.env.*
+*.env
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Notebooks checkpoints
+.ipynb_checkpoints/
+
+# Ruff / Black cache
+.ruff_cache/
+
+# Pytest
+.pytest_cache/
+htmlcov/
+.coverage
