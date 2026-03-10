@@ -80,10 +80,10 @@ def build_dataloaders(
     num_workers = config["data"].get("num_workers", 4)
 
     train_ds: CDDataset | Subset = CDDataset(
-        root=data_root, split="train", transform=get_train_transforms(crop_size)
+        root=f"{data_root}/train", split="train", transform=get_train_transforms(crop_size)
     )
     val_ds: CDDataset | Subset = CDDataset(
-        root=data_root, split="val", transform=get_val_transforms(crop_size)
+        root=f"{data_root}/val", split="val", transform=get_val_transforms(crop_size)
     )
 
     if subset is not None:
