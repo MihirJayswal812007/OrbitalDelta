@@ -18,11 +18,11 @@ from tqdm import tqdm
 # Dataset registry: name -> list of (url, filename, expected_sha256_prefix)
 DATASET_REGISTRY: dict[str, list[tuple[str, str, str]]] = {
     "levir-cd": [
-        # HuggingFace mirror (most reliable free source)
+        # Kaggle dataset direct download path (since HF requires login and GDrive limits)
         (
-            "https://huggingface.co/datasets/torchgeo/levir-cd/resolve/main/LEVIR-CD.zip",
+            "https://www.kaggle.com/api/v1/datasets/download/ejazzaq/levir-cd-dataset",
             "LEVIR-CD.zip",
-            "",  # checksum optional; validate directory structure instead
+            "",
         ),
     ],
     "whu-cd": [
