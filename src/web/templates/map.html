@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OrbitalDelta — Change Detection Viewer</title>
+  <meta name="description" content="Interactive satellite change detection visualization using Leaflet and OpenStreetMap">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <!-- Leaflet Draw (for bbox selection) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css"/>
+
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<!-- ───────── Header ───────── -->
+<header class="header">
+  <div class="header-brand">
+    <span class="header-icon">🛰️</span>
+    <span class="header-title">OrbitalDelta</span>
+    <span class="header-sub">Satellite Change Detection</span>
+  </div>
+  <div class="header-controls">
+    <button id="btn-refresh" class="btn btn-outline" title="Refresh detections">⟳ Refresh</button>
+    <button id="btn-submit" class="btn btn-primary">+ Submit Images</button>
+  </div>
+</header>
+
+<!-- ───────── Layout ───────── -->
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <h3 class="sidebar-heading">Layers</h3>
+      <label class="toggle-row">
+        <input type="checkbox" id="chk-changes" checked> Change Polygons
+      </label>
+      <label class="toggle-row">
+        <input type="checkbox" id="chk-heatmap"> Confidence Heatmap
+      </label>
+    </div>
+
+    <div class="sidebar-section">
+      <h3 class="sidebar-heading">Filter by Area</h3>
+      <label class="slider-label">Min area: <span id="area-val">0</span> m²</label>
+      <input type="range" id="area-filter" min="0" max="100000" step="500" value="0">
+    </div>
+
+    <div class="sidebar-section">
+      <h3 class="sidebar-heading">Spatial Query</h3>
+      <p class="hint">Draw a rectangle on the map to query detections in that area.</p>
+      <button id="btn-query-bbox" class="btn btn-secondary btn-full">Draw BBox Query</button>
+    </div>
+
+    <div class="sidebar-section">
+      <h3 class="sidebar-heading">Statistics</h3>
+      <div id="stats" class="stats-grid">
+        <div class="stat-box"><div class="stat-num" id="stat-total">—</div><div class="stat-lbl">Total Changes</div></div>
+        <div class="stat-box"><div class="stat-num" id="stat-area">—</div><div class="stat-lbl">Total Area (m²)</div></div>
+        <div class="stat-box"><div class="stat-num" id="stat-conf">—</div><div class="stat-lbl">Avg Confidence</div></div>
+      </div>
+    </div>
+
+    <!-- Detection list -->
+    <div class="sidebar-section flex-grow">
+      <h3 class="sidebar-heading">Detections <span id="list-count" class="badge">0</span></h3>
+      <ul id="detection-list" class="detection-list"></ul>
+    </div>
+  </aside>
+
+  <!-- Map -->
+  <main class="map-container">
+    <div id="map"></div>
+    <div id="info-panel" class="info-panel hidden">
+      <button id="info-close" class="info-close">✕</button>
+      <h4 id="info-title">Change Region</h4>
+      <table id="info-table" class="info-table"></table>
+    </div>
+  </main>
+</div>
+
+<!-- ───────── Submit Modal ───────── -->
+<div id="modal-backdrop" class="modal-backdrop hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Submit Image Pair</h3>
+      <button id="modal-close" class="btn-icon">✕</button>
+    </div>
+    <div class="modal-body">
+      <label class="field-label">Time-1 Image Path (A)</label>
+      <input id="in-img-a" type="text" class="field-input" placeholder="data/processed/levir-cd/test/A/img_0001.png">
+      <label class="field-label">Time-2 Image Path (B)</label>
+      <input id="in-img-b" type="text" class="field-input" placeholder="data/processed/levir-cd/test/B/img_0001.png">
+      <label class="field-label">Model Checkpoint</label>
+      <input id="in-ckpt" type="text" class="field-input" value="checkpoints/best.pt">
+      <label class="field-label">Timestamp A (optional)</label>
+      <input id="in-ts-a" type="text" class="field-input" placeholder="2023-01-01">
+      <label class="field-label">Timestamp B (optional)</label>
+      <input id="in-ts-b" type="text" class="field-input" placeholder="2024-01-01">
+    </div>
+    <div class="modal-footer">
+      <button id="btn-cancel" class="btn btn-outline">Cancel</button>
+      <button id="btn-detect" class="btn btn-primary">Run Detection</button>
+    </div>
+    <div id="job-status" class="job-status hidden"></div>
+  </div>
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN/WLcE=" crossorigin=""></script>
+<script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
