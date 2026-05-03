@@ -1,48 +1,195 @@
-# Data (too large for git)
-data/raw/
-data/processed/
-data/augmented/
+# =============================================================================
+# OrbitalDelta .gitignore
+# =============================================================================
 
-# Model artifacts
-checkpoints/
-logs/
-outputs/
-wandb/
-mlruns/
 
+# -----------------------------------------------------------------------------
 # Python
+# -----------------------------------------------------------------------------
 __pycache__/
 *.py[cod]
+*.pyo
+*.pyd
 *.so
+*.pyz
+
+# Distribution / packaging
+*.egg
 *.egg-info/
 dist/
 build/
 .eggs/
+wheels/
+pip-wheel-metadata/
+*.dist-info/
 
-# Env
+# Type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pytype/
+
+
+# -----------------------------------------------------------------------------
+# Data & Datasets  (too large for GitHub — download via notebook)
+# -----------------------------------------------------------------------------
+data/raw/
+data/processed/
+data/augmented/
+data/detections.gpkg
+
+# Keep the folder structure so the repo is clone-ready
+!data/.gitkeep
+
+
+# -----------------------------------------------------------------------------
+# Model Weights & Checkpoints
+# -----------------------------------------------------------------------------
+checkpoints/*.pt
+checkpoints/*.pth
+*.pt
+*.pth
+
+# Keep the folder so scripts can write to it on clone
+!checkpoints/.gitkeep
+
+
+# -----------------------------------------------------------------------------
+# Training Outputs  (visualisations, prediction masks, reports)
+# -----------------------------------------------------------------------------
+outputs/
+
+# Keep the folder
+!outputs/.gitkeep
+
+
+# -----------------------------------------------------------------------------
+# Logs  (TensorBoard, W&B, MLflow)
+# -----------------------------------------------------------------------------
+logs/
+wandb/
+mlruns/
+runs/
+
+
+# -----------------------------------------------------------------------------
+# Environment & Secrets
+# -----------------------------------------------------------------------------
 .env
 .env.*
 *.env
+.envrc
+secrets.yaml
+secrets.yml
+secrets.json
+*.pem
+*.key
+*.cer
 venv/
 .venv/
 env/
+ENV/
 
-# IDE
+
+# -----------------------------------------------------------------------------
+# IDE & Editor files
+# -----------------------------------------------------------------------------
+# VSCode
 .vscode/
+*.code-workspace
+
+# PyCharm / IntelliJ
 .idea/
+*.iml
+*.ipr
+*.iws
+
+# Cursor
+.cursorignore
+.cursorindexingignore
+
+# Vim / Emacs
 *.swp
+*.swo
+*~
+\#*\#
+.#*
 
-# OS
+
+# -----------------------------------------------------------------------------
+# Obsidian  (personal knowledge-base vault — not project documentation)
+# -----------------------------------------------------------------------------
+.obsidian/
+Orbitaldelta/
+
+# Any stray Obsidian-style daily notes or vault exports at root
+# (The project README.md at root IS tracked — this only catches loose notes)
+Expanding*.md
+Implementing*.md
+
+
+# -----------------------------------------------------------------------------
+# OS files
+# -----------------------------------------------------------------------------
+# macOS
 .DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
 Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
 
-# Notebooks checkpoints
+# Linux
+*~
+
+
+# -----------------------------------------------------------------------------
+# Jupyter / Colab artifacts
+# -----------------------------------------------------------------------------
 .ipynb_checkpoints/
+*/.ipynb_checkpoints/
+*.nbconvert.ipynb
 
-# Ruff / Black cache
-.ruff_cache/
 
-# Pytest
+# -----------------------------------------------------------------------------
+# Testing & Coverage
+# -----------------------------------------------------------------------------
 .pytest_cache/
 htmlcov/
 .coverage
+.coverage.*
+coverage.xml
+*.cover
+nosetests.xml
+test-results/
+
+
+# -----------------------------------------------------------------------------
+# Build & Cache tools
+# -----------------------------------------------------------------------------
+.ruff_cache/
+.black_cache/
+.cache/
+.tox/
+.nox/
+
+
+# -----------------------------------------------------------------------------
+# Temporary & scratch files
+# -----------------------------------------------------------------------------
+*.tmp
+*.temp
+*.bak
+*.zip
+*.tar.gz
+*.tar.bz2
+*.rar
+scratch/
+tmp/

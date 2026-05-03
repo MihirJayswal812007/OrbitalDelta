@@ -28,7 +28,11 @@ import torch
 import torch.nn as nn
 from torch.amp import GradScaler, autocast
 from torch.optim import AdamW
-from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts
+from torch.optim.lr_scheduler import (
+    CosineAnnealingWarmRestarts,
+    LinearLR,
+    SequentialLR,
+)
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
@@ -148,19 +152,76 @@ class Trainer:
         self.grad_clip = tc.get("gradient_clip_norm", 1.0)
         self.use_amp = tc.get("mixed_precision", True) and self.device.type == "cuda"
 
-        # Optimizer
+        # -----------------------------------------------------------------
+        # Discriminative Learning Rates
+        # -----------------------------------------------------------------
+        # The encoder uses ImageNet-pretrained weights that already know
+        # how to extract edges, textures, and shapes.  Using the full LR
+        # from the start would destroy those representations in the first
+        # few batches.
+        #
+        # Strategy:
+        #   • Encoder params  → lr × 0.1  (gentle fine-tuning)
+        #   • Decoder params  → lr × 1.0  (learns from scratch)
+        #
+        # NOTE: Our SiameseUNet uses a SINGLE self.encoder instance for
+        # both branches (weight sharing).  There is no encoder_b, so we
+        # cannot accidentally double-count parameters.
+        # -----------------------------------------------------------------
+        base_lr = tc["lr"]
+        wd = tc.get("weight_decay", 1e-4)
+
+        encoder_param_ids = set(id(p) for p in self.model.encoder.parameters())
+        encoder_params = [p for p in self.model.encoder.parameters() if p.requires_grad]
+        decoder_params = [
+            p for p in self.model.parameters()
+            if p.requires_grad and id(p) not in encoder_param_ids
+        ]
+
         self.optimizer = AdamW(
-            self.model.parameters(),
-            lr=tc["lr"],
-            weight_decay=tc.get("weight_decay", 1e-4),
+            [
+                {"params": encoder_params, "lr": base_lr * 0.1},  # pretrained
+                {"params": decoder_params, "lr": base_lr},        # from scratch
+            ],
+            weight_decay=wd,
+        )
+        logger.info(
+            f"Discriminative LRs: encoder={base_lr * 0.1:.1e}, "
+            f"decoder={base_lr:.1e} (weight_decay={wd})"
         )
 
-        # Scheduler
-        self.scheduler = CosineAnnealingWarmRestarts(
+        # -----------------------------------------------------------------
+        # LR Schedule: 5-epoch Linear Warmup → Cosine Annealing
+        # -----------------------------------------------------------------
+        # Starting with the full LR on a pretrained backbone can damage
+        # the early layers before the optimizer's second-moment estimates
+        # have stabilised.  A short linear warmup (start_factor=0.1)
+        # ramps both parameter groups from 10% of their target LR to
+        # 100% over the first 5 epochs, then hands off to cosine
+        # annealing with warm restarts for the remainder of training.
+        # -----------------------------------------------------------------
+        warmup_epochs = tc.get("warmup_epochs", 5)
+
+        warmup_scheduler = LinearLR(
+            self.optimizer,
+            start_factor=0.1,
+            end_factor=1.0,
+            total_iters=warmup_epochs,
+        )
+        cosine_scheduler = CosineAnnealingWarmRestarts(
             self.optimizer,
             T_0=tc.get("scheduler_T0", 10),
             T_mult=1,
             eta_min=1e-6,
+        )
+        self.scheduler = SequentialLR(
+            self.optimizer,
+            schedulers=[warmup_scheduler, cosine_scheduler],
+            milestones=[warmup_epochs],
+        )
+        logger.info(
+            f"Scheduler: {warmup_epochs}-epoch warmup → CosineAnnealingWarmRestarts "
+            f"(T_0={tc.get('scheduler_T0', 10)})"
         )
 
         # Mixed precision scaler (no-op on CPU)
@@ -267,8 +328,9 @@ class Trainer:
 
             pbar.set_postfix({"loss": f"{loss.item():.4f}"})
 
-        # Step scheduler once per epoch
-        self.scheduler.step(epoch)
+        # Step scheduler once per epoch (SequentialLR manages its own
+        # internal counter — do NOT pass the epoch number explicitly)
+        self.scheduler.step()
 
         return total_loss / max(step, 1)
 
