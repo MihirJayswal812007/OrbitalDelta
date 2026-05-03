@@ -106,7 +106,9 @@ class FocalDiceLoss(nn.Module):
         target = target.float()
 
         # Focal loss = -(1-p_t)^gamma * log(p_t)
-        bce = F.binary_cross_entropy(pred, target, reduction="none")
+        # AMP-safe: convert sigmoid output back to logits, then use with_logits
+        pred_logits = torch.log(pred.float().clamp(1e-6, 1 - 1e-6) / (1 - pred.float().clamp(1e-6, 1 - 1e-6)))
+        bce = F.binary_cross_entropy_with_logits(pred_logits, target.float(), reduction="none")
         p_t = pred * target + (1 - pred) * (1 - target)
         focal = bce * (1 - p_t) ** self.gamma
 
