@@ -45,10 +45,9 @@ data/detections.gpkg
 # -----------------------------------------------------------------------------
 # Model Weights & Checkpoints
 # -----------------------------------------------------------------------------
-checkpoints/*.pt
-checkpoints/*.pth
 *.pt
 *.pth
+!checkpoints/.gitkeep
 
 # Keep the folder so scripts can write to it on clone
 !checkpoints/.gitkeep
@@ -119,9 +118,12 @@ ENV/
 # -----------------------------------------------------------------------------
 # Obsidian  (personal knowledge-base vault — not project documentation)
 # -----------------------------------------------------------------------------
-.obsidian/
+# Common Obsidian vault folder names — add yours if different
 Orbitaldelta/
-
+OrbitalDelta/
+vault/
+notes/
+_notes/
 # Any stray Obsidian-style daily notes or vault exports at root
 # (The project README.md at root IS tracked — this only catches loose notes)
 Expanding*.md
